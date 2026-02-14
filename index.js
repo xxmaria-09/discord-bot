@@ -1,7 +1,8 @@
 const {
   Client,
   GatewayIntentBits,
-  EmbedBuilder
+  EmbedBuilder,
+  Partials
 } = require('discord.js');
 
 const client = new Client({
@@ -11,26 +12,29 @@ const client = new Client({
     GatewayIntentBits.MessageContent,
     GatewayIntentBits.GuildMessageReactions,
     GatewayIntentBits.GuildMembers
-  ]
+  ],
+  partials: [Partials.Message, Partials.Channel, Partials.Reaction]
 });
 
 
 // ===============================
-// BOT READY
+// READY
 // ===============================
 client.once('ready', () => {
-  console.log('Bot is online!');
+  console.log(`✅ Logged in as ${client.user.tag}`);
 });
 
 
 // ===============================
-// EMBED COMMAND
-// !embed Title | Description | Image(optional) | Thumbnail(optional)
+// EMBED + ROLE COMMANDS
 // ===============================
 client.on('messageCreate', async message => {
   if (message.author.bot) return;
 
-  // ---------- NORMAL EMBED ----------
+  // ===============================
+  // NORMAL EMBED
+  // !embed Title | Description | Image(optional) | Thumb(optional)
+  // ===============================
   if (message.content.startsWith('!embed')) {
 
     const args = message.content.slice(6).split('|');
@@ -52,32 +56,26 @@ client.on('messageCreate', async message => {
   }
 
 
-  // ---------- REACTION ROLES EMBED ----------
+  // ===============================
+  // REACTION ROLE EMBED
+  // !roles
+  // ===============================
   if (message.content === '!roles') {
 
     const embed = new EmbedBuilder()
       .setTitle('Choose your roles')
-      .setDescription(
-        '꒰ <:bowbydelaDNS:1472242557881815050> ꒱ ˖. **__comms__**
- <:emojicdelaDNS:1471853478262472918> ˖.  <@&1449123125202518016>
-
-꒰ <:cherrybydelaDNS:1472242466609434789>  ꒱ ˖. **__annc__**
- <:emojicdelaDNS:1471853478262472918> ˖.  <@&1449123286914175039>
-
-꒰ <:wing1bydelaDNS:1472241395975585844>   ꒱ ˖. **__giveaways__**
- <:emojicdelaDNS:1471853478262472918> ˖.  <@&1449122330423853106>
-
-꒰ <:wing2bydelaDNS:1472242032700559598>   ꒱ ˖. **__sales__**
- <:emojicdelaDNS:1471853478262472918> ˖.  <@&1449123442183110920>
-
-꒰ <:heartbydelaDNS:1471859515266830449>   ꒱ ˖. **__stocks__**
- <:emojicdelaDNS:1471853478262472918> ˖.  <@&1460633553883631814>
-      )
+      .setDescription(`
+꒰ <:emojicdelaDNS:1471853478262472918> ꒱ **Comms**
+꒰ <:cherrybydelaDNS:1472242466609434789> ꒱ **Announcements**
+꒰ <:wing1bydelaDNS:1472241395975585844> ꒱ **Giveaways**
+꒰ <:wing2bydelaDNS:1472242032700559598> ꒱ **Sales**
+꒰ <:heartbydelaDNS:1471859515266830449> ꒱ **Stocks**
+      `)
       .setColor('#fee1f2');
 
     const msg = await message.channel.send({ embeds: [embed] });
 
-    // 🔥 PUT YOUR 5 EMOJIS HERE
+    // 🔥 ADD YOUR 5 EMOJIS HERE
     await msg.react('<:emojicdelaDNS:1471853478262472918>');
     await msg.react('<:cherrybydelaDNS:1472242466609434789>');
     await msg.react('<:wing1bydelaDNS:1472241395975585844>');
@@ -88,23 +86,26 @@ client.on('messageCreate', async message => {
 
 
 // ===============================
-// ROLE IDs + EMOJIS MAP
-// 🔥 EDIT HERE ONLY
+// EMOJI ➜ ROLE MAP
+// 🔥 EDIT ONLY THIS PART
+// use ROLE ID only (NOT <@&...>)
 // ===============================
 const reactionRoles = {
-  '<:emojicdelaDNS:1471853478262472918>': '<@&1449123125202518016>',
-  '<:cherrybydelaDNS:1472242466609434789>': '<@&1449123286914175039>',
-  '<:wing1bydelaDNS:1472241395975585844>': '<@&1449122330423853106>',
-  '<:wing2bydelaDNS:1472242032700559598>': '<@&1449123442183110920>',
-  '<:heartbydelaDNS:1471859515266830449>': '<@&1460633553883631814>'
+  'emojicdelaDNS': '1449123125202518016',
+  'cherrybydelaDNS': '1449123286914175039',
+  'wing1bydelaDNS': '1449122330423853106',
+  'wing2bydelaDNS': '1449123442183110920',
+  'heartbydelaDNS': '1460633553883631814'
 };
 
 
 // ===============================
-// ADD ROLE WHEN REACT
+// ADD ROLE
 // ===============================
 client.on('messageReactionAdd', async (reaction, user) => {
   if (user.bot) return;
+
+  if (reaction.partial) await reaction.fetch();
 
   const roleId = reactionRoles[reaction.emoji.name];
   if (!roleId) return;
@@ -115,10 +116,12 @@ client.on('messageReactionAdd', async (reaction, user) => {
 
 
 // ===============================
-// REMOVE ROLE WHEN UNREACT
+// REMOVE ROLE
 // ===============================
 client.on('messageReactionRemove', async (reaction, user) => {
   if (user.bot) return;
+
+  if (reaction.partial) await reaction.fetch();
 
   const roleId = reactionRoles[reaction.emoji.name];
   if (!roleId) return;
@@ -128,6 +131,5 @@ client.on('messageReactionRemove', async (reaction, user) => {
 });
 
 
+// ===============================
 client.login(process.env.TOKEN);
-
-
