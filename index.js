@@ -13,27 +13,25 @@ client.once('ready', () => {
 });
 
 client.on('messageCreate', message => {
-  if (message.content === '!embed') {
+  if (message.author.bot) return;
 
-    const embed = new EmbedBuilder()
-      .setDescription('               # ˗ˏˋ ꒰  order<:bowbydelaDNS:1471856216308449386><:bowbydelaDNS:1471856231713865816> ꒱ ˎˊ˗
-꒰ <:bow2bydelaDNS:1471856534278508556><:bow2bydelaDNS:1471856516771614832> ꒱ ˖. tickets
- <:emojicdelaDNS:1471853478262472918> ˖.  **__read <#info> & <#prices> before opening ticket__** 
+  // command: !embed Title | Description
+  if (!message.content.startsWith('!embed')) return;
 
-꒰ <:bow2bydelaDNS:1471856534278508556><:bow2bydelaDNS:1471856516771614832> ꒱ ˖. payment
- <:emojicdelaDNS:1471853478262472918> ˖.  **__must have payment ready __**
+  const args = message.content.slice(7).split('|');
 
-꒰ <:bow2bydelaDNS:1471856534278508556><:bow2bydelaDNS:1471856516771614832> ꒱ ˖. order
- <:emojicdelaDNS:1471853478262472918> ˖.  **__provide all details of what you are ordering __**')
-      .setColor(fee1f2);
+  const title = args[0]?.trim() || 'No title';
+  const description = args[1]?.trim() || 'No description';
 
-    message.channel.send({ embeds: [embed] });
-  }
+  const embed = new EmbedBuilder()
+    .setTitle(title)
+    .setDescription(description)
+    .setColor(fee1f2)
+    .setTimestamp();
+
+  message.channel.send({ embeds: [embed] });
 });
 
 client.login(process.env.TOKEN);
 
-});
-
-client.login(process.env.TOKEN);
 
