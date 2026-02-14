@@ -65,18 +65,27 @@ client.on('messageCreate', async message => {
     const embed = new EmbedBuilder()
       .setTitle('Choose your roles')
       .setDescription(`
-꒰ <:emojicdelaDNS:1471853478262472918> ꒱ **Comms**
-꒰ <:cherrybydelaDNS:1472242466609434789> ꒱ **Announcements**
-꒰ <:wing1bydelaDNS:1472241395975585844> ꒱ **Giveaways**
-꒰ <:wing2bydelaDNS:1472242032700559598> ꒱ **Sales**
-꒰ <:heartbydelaDNS:1471859515266830449> ꒱ **Stocks**
+꒰ <:bowbydelaDNS:1472242557881815050> ꒱ **__Comms__**
+<:emojicdelaDNS:1471853478262472918> ˖.  <@1449123125202518016>
+
+꒰ <:cherrybydelaDNS:1472242466609434789> ꒱ **__Announcements__**
+<:emojicdelaDNS:1471853478262472918> ˖.  <@1449123286914175039>
+
+꒰ <:wing1bydelaDNS:1472241395975585844> ꒱ **__Giveaways__**
+<:emojicdelaDNS:1471853478262472918> ˖.  <@1449122330423853106>
+
+꒰ <:wing2bydelaDNS:1472242032700559598> ꒱ **__Sales__**
+<:emojicdelaDNS:1471853478262472918> ˖.  <@1449123442183110920>
+
+꒰ <:heartbydelaDNS:1471859515266830449> ꒱ **__Stocks__**
+<:emojicdelaDNS:1471853478262472918> ˖.  <@1460633553883631814>
       `)
       .setColor('#fee1f2');
 
     const msg = await message.channel.send({ embeds: [embed] });
 
     // 🔥 ADD YOUR 5 EMOJIS HERE
-    await msg.react('<:emojicdelaDNS:1471853478262472918>');
+    await msg.react('<:bowbydelaDNS:1472242557881815050>');
     await msg.react('<:cherrybydelaDNS:1472242466609434789>');
     await msg.react('<:wing1bydelaDNS:1472241395975585844>');
     await msg.react('<:wing2bydelaDNS:1472242032700559598>');
@@ -91,7 +100,7 @@ client.on('messageCreate', async message => {
 // use ROLE ID only (NOT <@&...>)
 // ===============================
 const reactionRoles = {
-  'emojicdelaDNS': '1449123125202518016',
+  'bowbydelaDNS': '1472242557881815050',
   'cherrybydelaDNS': '1449123286914175039',
   'wing1bydelaDNS': '1449122330423853106',
   'wing2bydelaDNS': '1449123442183110920',
@@ -133,3 +142,4 @@ client.on('messageReactionRemove', async (reaction, user) => {
 
 // ===============================
 client.login(process.env.TOKEN);
+
