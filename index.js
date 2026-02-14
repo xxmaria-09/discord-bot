@@ -18,7 +18,7 @@ client.on('messageCreate', message => {
   // command: !embed Title | Description
   if (!message.content.startsWith('!embed')) return;
 
-  const args = message.content.slice(7).split('|');
+  const args = message.content.slice(6).split('|');
 
   const title = args[0]?.trim() || 'No title';
   const description = args[1]?.trim() || 'No description';
@@ -33,6 +33,7 @@ client.on('messageCreate', message => {
 });
 
 client.login(process.env.TOKEN);
+
 
 
 
