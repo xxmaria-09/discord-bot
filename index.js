@@ -1,3 +1,17 @@
+const { Client, GatewayIntentBits, EmbedBuilder } = require('discord.js');
+
+const client = new Client({
+  intents: [
+    GatewayIntentBits.Guilds,
+    GatewayIntentBits.GuildMessages,
+    GatewayIntentBits.MessageContent
+  ]
+});
+
+client.once('ready', () => {
+  console.log('Bot is online!');
+});
+
 client.on('messageCreate', message => {
   if (message.author.bot) return;
   if (!message.content.startsWith('!embed')) return;
@@ -14,10 +28,10 @@ client.on('messageCreate', message => {
     .setDescription(description || 'No description')
     .setColor('#fee1f2');
 
-  // only add if provided
   if (image) embed.setImage(image);
   if (thumb) embed.setThumbnail(thumb);
 
   message.channel.send({ embeds: [embed] });
 });
 
+client.login(process.env.TOKEN);
