@@ -63,22 +63,22 @@ client.on('messageCreate', async message => {
   if (message.content === '!roles') {
 
     const embed = new EmbedBuilder()
-      .setTitle('Choose your roles')
+      .setTitle('˗ˏˋ ꒰  pings ꒱ ˎˊ˗')
       .setDescription(`
 ꒰ <:bowbydelaDNS:1472242557881815050> ꒱ **__Comms__**
-<:emojicdelaDNS:1471853478262472918> ˖.  <@1449123125202518016>
+<:emojicdelaDNS:1471853478262472918> ˖.  <@&1449123125202518016>
 
 ꒰ <:cherrybydelaDNS:1472242466609434789> ꒱ **__Announcements__**
-<:emojicdelaDNS:1471853478262472918> ˖.  <@1449123286914175039>
+<:emojicdelaDNS:1471853478262472918> ˖.  <@&1449123286914175039>
 
 ꒰ <:wing1bydelaDNS:1472241395975585844> ꒱ **__Giveaways__**
-<:emojicdelaDNS:1471853478262472918> ˖.  <@1449122330423853106>
+<:emojicdelaDNS:1471853478262472918> ˖.  <@&1449122330423853106>
 
 ꒰ <:wing2bydelaDNS:1472242032700559598> ꒱ **__Sales__**
-<:emojicdelaDNS:1471853478262472918> ˖.  <@1449123442183110920>
+<:emojicdelaDNS:1471853478262472918> ˖.  <@&1449123442183110920>
 
 ꒰ <:heartbydelaDNS:1471859515266830449> ꒱ **__Stocks__**
-<:emojicdelaDNS:1471853478262472918> ˖.  <@1460633553883631814>
+<:emojicdelaDNS:1471853478262472918> ˖.  <@&1460633553883631814>
       `)
       .setColor('#fee1f2');
 
@@ -142,4 +142,5 @@ client.on('messageReactionRemove', async (reaction, user) => {
 
 // ===============================
 client.login(process.env.TOKEN);
+
 
