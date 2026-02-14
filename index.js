@@ -100,7 +100,7 @@ client.on('messageCreate', async message => {
 // use ROLE ID only (NOT <@&...>)
 // ===============================
 const reactionRoles = {
-  'bowbydelaDNS': '1472242557881815050',
+  'bowbydelaDNS': '1449123125202518016',
   'cherrybydelaDNS': '1449123286914175039',
   'wing1bydelaDNS': '1449122330423853106',
   'wing2bydelaDNS': '1449123442183110920',
@@ -142,5 +142,6 @@ client.on('messageReactionRemove', async (reaction, user) => {
 
 // ===============================
 client.login(process.env.TOKEN);
+
 
 
