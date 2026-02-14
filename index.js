@@ -26,12 +26,13 @@ client.on('messageCreate', message => {
   const embed = new EmbedBuilder()
     .setTitle(title)
     .setDescription(description)
-    .setColor(fee1f2)
+    .setColor('#fee1f2')
     .setTimestamp();
 
   message.channel.send({ embeds: [embed] });
 });
 
 client.login(process.env.TOKEN);
+
 
 
