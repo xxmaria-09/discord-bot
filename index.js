@@ -27,12 +27,12 @@ client.on('messageCreate', message => {
     .setTitle(title)
     .setDescription(description)
     .setColor('#fee1f2')
-    .setTimestamp();
 
   message.channel.send({ embeds: [embed] });
 });
 
 client.login(process.env.TOKEN);
+
 
 
 
