@@ -26,15 +26,15 @@ client.once('ready', () => {
 
 
 // ===============================
-// EMBED + ROLE COMMANDS
+// COMMANDS
 // ===============================
 client.on('messageCreate', async message => {
   if (message.author.bot) return;
 
-  // ===============================
+  // =====================================================
   // NORMAL EMBED
   // !embed Title | Description | Image(optional) | Thumb(optional)
-  // ===============================
+  // =====================================================
   if (message.content.startsWith('!embed')) {
 
     const args = message.content.slice(6).split('|');
@@ -56,35 +56,30 @@ client.on('messageCreate', async message => {
   }
 
 
-  // ===============================
-  // REACTION ROLE EMBED
-  // !roles
-  // ===============================
-  if (message.content === '!roles') {
+  // =====================================================
+  // ROLE PANEL EMBED
+  // !roles Title | Description | Image(optional) | Thumb(optional)
+  // =====================================================
+  if (message.content.startsWith('!roles')) {
+
+    const args = message.content.slice(6).split('|');
+
+    const title = args[0]?.trim();
+    const description = args[1]?.trim();
+    const image = args[2]?.trim();
+    const thumb = args[3]?.trim();
 
     const embed = new EmbedBuilder()
-      .setTitle('˗ˏˋ ꒰  pings ꒱ ˎˊ˗')
-      .setDescription(`
-꒰ <:bowbydelaDNS:1472242557881815050> ꒱ **__Comms__**
-<:emojicdelaDNS:1471853478262472918> ˖.  <@&1449123125202518016>
-
-꒰ <:cherrybydelaDNS:1472242466609434789> ꒱ **__Announcements__**
-<:emojicdelaDNS:1471853478262472918> ˖.  <@&1449123286914175039>
-
-꒰ <:wing1bydelaDNS:1472241395975585844> ꒱ **__Giveaways__**
-<:emojicdelaDNS:1471853478262472918> ˖.  <@&1449122330423853106>
-
-꒰ <:wing2bydelaDNS:1472242032700559598> ꒱ **__Sales__**
-<:emojicdelaDNS:1471853478262472918> ˖.  <@&1449123442183110920>
-
-꒰ <:heartbydelaDNS:1471859515266830449> ꒱ **__Stocks__**
-<:emojicdelaDNS:1471853478262472918> ˖.  <@&1460633553883631814>
-      `)
+      .setTitle(title || 'Pick your roles')
+      .setDescription(description || 'React to get roles')
       .setColor('#fee1f2');
+
+    if (image) embed.setImage(image);
+    if (thumb) embed.setThumbnail(thumb);
 
     const msg = await message.channel.send({ embeds: [embed] });
 
-    // 🔥 ADD YOUR 5 EMOJIS HERE
+    // 🔥 YOUR 5 EMOJIS
     await msg.react('<:bowbydelaDNS:1472242557881815050>');
     await msg.react('<:cherrybydelaDNS:1472242466609434789>');
     await msg.react('<:wing1bydelaDNS:1472241395975585844>');
@@ -94,11 +89,9 @@ client.on('messageCreate', async message => {
 });
 
 
-// ===============================
-// EMOJI ➜ ROLE MAP
-// 🔥 EDIT ONLY THIS PART
-// use ROLE ID only (NOT <@&...>)
-// ===============================
+// =====================================================
+// EMOJI ➜ ROLE MAP (ROLE IDs ONLY)
+// =====================================================
 const reactionRoles = {
   'bowbydelaDNS': '1449123125202518016',
   'cherrybydelaDNS': '1449123286914175039',
@@ -113,7 +106,6 @@ const reactionRoles = {
 // ===============================
 client.on('messageReactionAdd', async (reaction, user) => {
   if (user.bot) return;
-
   if (reaction.partial) await reaction.fetch();
 
   const roleId = reactionRoles[reaction.emoji.name];
@@ -129,7 +121,6 @@ client.on('messageReactionAdd', async (reaction, user) => {
 // ===============================
 client.on('messageReactionRemove', async (reaction, user) => {
   if (user.bot) return;
-
   if (reaction.partial) await reaction.fetch();
 
   const roleId = reactionRoles[reaction.emoji.name];
@@ -142,6 +133,7 @@ client.on('messageReactionRemove', async (reaction, user) => {
 
 // ===============================
 client.login(process.env.TOKEN);
+
 
 
 
