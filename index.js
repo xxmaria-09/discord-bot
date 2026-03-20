@@ -80,11 +80,11 @@ client.on('messageCreate', async message => {
     const msg = await message.channel.send({ embeds: [embed] });
 
     // 🔥 YOUR 5 EMOJIS
-    await msg.react('<:bowbydelaDNS:1472242557881815050>');
-    await msg.react('<:cherrybydelaDNS:1472242466609434789>');
-    await msg.react('<:wing1bydelaDNS:1472241395975585844>');
-    await msg.react('<:wing2bydelaDNS:1472242032700559598>');
-    await msg.react('<:heartbydelaDNS:1471859515266830449>');
+    await msg.react('1472242557881815050');
+await msg.react('1472242466609434789');
+await msg.react('1472241395975585844');
+await msg.react('1472242032700559598');
+await msg.react('1471859515266830449');
   }
 });
 
