@@ -1,3 +1,6 @@
+process.on('unhandledRejection', err => {
+  console.error('❌ UNHANDLED ERROR:', err);
+});
 const {
   Client,
   GatewayIntentBits,
@@ -80,11 +83,11 @@ client.on('messageCreate', async message => {
     const msg = await message.channel.send({ embeds: [embed] });
 
     // 🔥 YOUR 5 EMOJIS
-    await msg.react('1472242557881815050');
-await msg.react('1472242466609434789');
-await msg.react('1472241395975585844');
-await msg.react('1472242032700559598');
-await msg.react('1471859515266830449');
+    await msg.react('1449123125202518016');
+await msg.react('1449123286914175039');
+await msg.react('1449122330423853106');
+await msg.react('1449123442183110920');
+await msg.react('1460633553883631814');
   }
 });
 
