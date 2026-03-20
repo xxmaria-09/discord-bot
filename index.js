@@ -132,6 +132,8 @@ client.on('messageReactionRemove', async (reaction, user) => {
 
 
 // ===============================
+console.log("TOKEN:", process.env.TOKEN);
+
 client.login(process.env.TOKEN)
   .then(() => console.log("🔥 LOGIN SUCCESS"))
   .catch(err => console.error("❌ LOGIN ERROR:", err));
