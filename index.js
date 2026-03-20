@@ -3,9 +3,9 @@ const {
   GatewayIntentBits,
   EmbedBuilder,
   Partials
-} = require('discord.js');
+} = require("discord.js");
 
-const fs = require('fs');
+const fs = require("fs");
 
 const client = new Client({
   intents: [
@@ -18,160 +18,172 @@ const client = new Client({
   partials: [Partials.Message, Partials.Channel, Partials.Reaction]
 });
 
-let embeds = require('./embeds.json');
-
-function saveEmbeds() {
-  fs.writeFileSync('./embeds.json', JSON.stringify(embeds, null, 2));
+// ================= DATABASE =================
+function loadData() {
+  return JSON.parse(fs.readFileSync("./data.json", "utf8"));
+}
+function saveData(data) {
+  fs.writeFileSync("./data.json", JSON.stringify(data, null, 2));
 }
 
-// ===============================
-client.once('ready', () => {
+// ================= READY =================
+client.once("ready", () => {
   console.log(`✅ Logged in as ${client.user.tag}`);
 });
 
-// ===============================
-client.on('messageCreate', async message => {
+// ================= COMMANDS =================
+client.on("messageCreate", async (message) => {
   if (message.author.bot) return;
 
-  const args = message.content.split(' ');
+  const args = message.content.split(" ");
 
-  // ===============================
+  // =====================================================
   // CREATE EMBED
   // !embed create name
-  // ===============================
-  if (args[0] === '!embed' && args[1] === 'create') {
+  // =====================================================
+  if (args[0] === "!embed" && args[1] === "create") {
     const name = args[2];
-    if (!name) return message.reply('give a name');
+    if (!name) return message.reply("Give a name");
 
-    embeds[name] = {
-      title: 'Title',
-      description: 'Description',
-      image: '',
-      thumb: '',
+    const data = loadData();
+    data.embeds[name] = {
+      title: "Title",
+      description: "Description",
+      image: "",
+      thumb: "",
       messageId: null,
       channelId: null
     };
+    saveData(data);
 
-    saveEmbeds();
-    message.reply(`✅ embed "${name}" created`);
+    message.reply(`✅ Embed **${name}** created`);
   }
 
-  // ===============================
+  // =====================================================
   // EDIT EMBED
-  // !embed edit name Title | Desc | img | thumb
-  // ===============================
-  if (args[0] === '!embed' && args[1] === 'edit') {
+  // !embed edit name Title | Desc | Image | Thumb
+  // =====================================================
+  if (args[0] === "!embed" && args[1] === "edit") {
     const name = args[2];
-    if (!embeds[name]) return message.reply('not found');
+    const content = message.content.split(name)[1];
 
-    const data = message.content.split('|');
+    if (!content) return;
 
-    embeds[name].title = data[0].split(name)[1]?.trim() || embeds[name].title;
-    embeds[name].description = data[1]?.trim() || embeds[name].description;
-    embeds[name].image = data[2]?.trim() || embeds[name].image;
-    embeds[name].thumb = data[3]?.trim() || embeds[name].thumb;
+    const split = content.split("|");
 
-    saveEmbeds();
+    const data = loadData();
+    if (!data.embeds[name]) return message.reply("Embed not found");
 
-    // UPDATE EXISTING MESSAGE
-    if (embeds[name].messageId) {
-      const channel = await client.channels.fetch(embeds[name].channelId);
-      const msg = await channel.messages.fetch(embeds[name].messageId);
+    data.embeds[name].title = split[0]?.trim();
+    data.embeds[name].description = split[1]?.trim();
+    data.embeds[name].image = split[2]?.trim();
+    data.embeds[name].thumb = split[3]?.trim();
 
-      const embed = new EmbedBuilder()
-        .setTitle(embeds[name].title)
-        .setDescription(embeds[name].description)
-        .setColor('#fee1f2');
+    saveData(data);
 
-      if (embeds[name].image) embed.setImage(embeds[name].image);
-      if (embeds[name].thumb) embed.setThumbnail(embeds[name].thumb);
+    // AUTO UPDATE MESSAGE
+    if (data.embeds[name].messageId) {
+      try {
+        const channel = await client.channels.fetch(data.embeds[name].channelId);
+        const msg = await channel.messages.fetch(data.embeds[name].messageId);
 
-      msg.edit({ embeds: [embed] });
+        const embed = new EmbedBuilder()
+          .setTitle(data.embeds[name].title)
+          .setDescription(data.embeds[name].description)
+          .setColor("#fee1f2");
+
+        if (data.embeds[name].image) embed.setImage(data.embeds[name].image);
+        if (data.embeds[name].thumb) embed.setThumbnail(data.embeds[name].thumb);
+
+        msg.edit({ embeds: [embed] });
+      } catch (e) {}
     }
 
-    message.reply(`✏️ updated "${name}"`);
+    message.reply(`✏️ Edited ${name}`);
   }
 
-  // ===============================
-  // SHOW EMBED
-  // !embed show name
-  // ===============================
-  if (args[0] === '!embed' && args[1] === 'show') {
+  // =====================================================
+  // SEND EMBED
+  // !embed send name
+  // =====================================================
+  if (args[0] === "!embed" && args[1] === "send") {
     const name = args[2];
-    if (!embeds[name]) return message.reply('not found');
+    const data = loadData();
+
+    if (!data.embeds[name]) return message.reply("Not found");
 
     const embed = new EmbedBuilder()
-      .setTitle(embeds[name].title)
-      .setDescription(embeds[name].description)
-      .setColor('#fee1f2');
+      .setTitle(data.embeds[name].title)
+      .setDescription(data.embeds[name].description)
+      .setColor("#fee1f2");
 
-    if (embeds[name].image) embed.setImage(embeds[name].image);
-    if (embeds[name].thumb) embed.setThumbnail(embeds[name].thumb);
+    if (data.embeds[name].image) embed.setImage(data.embeds[name].image);
+    if (data.embeds[name].thumb) embed.setThumbnail(data.embeds[name].thumb);
 
     const msg = await message.channel.send({ embeds: [embed] });
 
-    embeds[name].messageId = msg.id;
-    embeds[name].channelId = message.channel.id;
-    saveEmbeds();
+    data.embeds[name].messageId = msg.id;
+    data.embeds[name].channelId = msg.channel.id;
+    saveData(data);
   }
 
-  // ===============================
-  // ROLE PANEL
+  // =====================================================
+  // ROLE PANEL CREATE
   // !roles create name
-  // ===============================
-  if (args[0] === '!roles' && args[1] === 'create') {
+  // =====================================================
+  if (args[0] === "!roles" && args[1] === "create") {
     const name = args[2];
 
-    embeds[name] = {
-      type: 'roles',
-      title: 'Pick roles',
-      description: 'React below',
+    const data = loadData();
+    data.roles[name] = {
+      title: "Pick roles",
+      description: "React below",
       messageId: null,
       channelId: null
     };
+    saveData(data);
 
-    saveEmbeds();
-    message.reply(`✅ role panel "${name}" created`);
+    message.reply(`✅ Roles panel ${name} created`);
   }
 
-  // ===============================
-  // SHOW ROLE PANEL
-  // ===============================
-  if (args[0] === '!roles' && args[1] === 'show') {
+  // =====================================================
+  // ROLE PANEL SEND
+  // =====================================================
+  if (args[0] === "!roles" && args[1] === "send") {
     const name = args[2];
-    if (!embeds[name]) return;
+    const data = loadData();
+
+    if (!data.roles[name]) return;
 
     const embed = new EmbedBuilder()
-      .setTitle(embeds[name].title)
-      .setDescription(embeds[name].description)
-      .setColor('#fee1f2');
+      .setTitle(data.roles[name].title)
+      .setDescription(data.roles[name].description)
+      .setColor("#fee1f2");
 
     const msg = await message.channel.send({ embeds: [embed] });
 
-    // CUSTOM EMOJIS (FIXED)
-    await msg.react('1472242557881815050');
-    await msg.react('1472242466609434789');
-    await msg.react('1472241395975585844');
-    await msg.react('1472242032700559598');
-    await msg.react('1471859515266830449');
+    await msg.react("<:bowbydelaDNS:1472242557881815050>");
+    await msg.react("<:cherrybydelaDNS:1472242466609434789>");
+    await msg.react("<:wing1bydelaDNS:1472241395975585844>");
+    await msg.react("<:wing2bydelaDNS:1472242032700559598>");
+    await msg.react("<:heartbydelaDNS:1471859515266830449>");
 
-    embeds[name].messageId = msg.id;
-    embeds[name].channelId = message.channel.id;
-    saveEmbeds();
+    data.roles[name].messageId = msg.id;
+    data.roles[name].channelId = msg.channel.id;
+    saveData(data);
   }
 });
 
-// ===============================
+// ================= ROLES =================
 const reactionRoles = {
-  'bowbydelaDNS': '1449123125202518016',
-  'cherrybydelaDNS': '1449123286914175039',
-  'wing1bydelaDNS': '1449122330423853106',
-  'wing2bydelaDNS': '1449123442183110920',
-  'heartbydelaDNS': '1460633553883631814'
+  bowbydelaDNS: "1449123125202518016",
+  cherrybydelaDNS: "1449123286914175039",
+  wing1bydelaDNS: "1449122330423853106",
+  wing2bydelaDNS: "1449123442183110920",
+  heartbydelaDNS: "1460633553883631814"
 };
 
-// ===============================
-client.on('messageReactionAdd', async (reaction, user) => {
+client.on("messageReactionAdd", async (reaction, user) => {
   if (user.bot) return;
   if (reaction.partial) await reaction.fetch();
 
@@ -182,8 +194,7 @@ client.on('messageReactionAdd', async (reaction, user) => {
   member.roles.add(roleId);
 });
 
-// ===============================
-client.on('messageReactionRemove', async (reaction, user) => {
+client.on("messageReactionRemove", async (reaction, user) => {
   if (user.bot) return;
   if (reaction.partial) await reaction.fetch();
 
@@ -192,6 +203,10 @@ client.on('messageReactionRemove', async (reaction, user) => {
 
   const member = await reaction.message.guild.members.fetch(user.id);
   member.roles.remove(roleId);
+});
+
+// ================= LOGIN =================
+client.login(process.env.TOKEN);
 });
 
 // ===============================
