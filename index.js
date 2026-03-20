@@ -23,7 +23,6 @@ const client = new Client({
 // ===============================
 let embeds = JSON.parse(fs.readFileSync("./embeds.json", "utf8"));
 
-// SAVE FUNCTION
 function saveEmbeds() {
   fs.writeFileSync("./embeds.json", JSON.stringify(embeds, null, 2));
 }
@@ -34,25 +33,44 @@ client.once('ready', () => {
 });
 
 // ===============================
-// ASK FUNCTION (BUILDER)
+// ASK FUNCTION (CLEAN)
 // ===============================
 async function ask(question, message) {
   const filter = m => m.author.id === message.author.id;
 
   await message.channel.send(question);
 
-  const collected = await message.channel.awaitMessages({
-    filter,
-    max: 1,
-    time: 60000
-  });
+  try {
+    const collected = await message.channel.awaitMessages({
+      filter,
+      max: 1,
+      time: 60000,
+      errors: ["time"]
+    });
 
-  if (!collected.size) return null;
+    const answer = collected.first().content.trim();
+    if (answer.toLowerCase() === "skip") return null;
 
-  const answer = collected.first().content;
-  if (answer.toLowerCase() === "skip") return null;
+    return answer;
 
-  return answer;
+  } catch {
+    message.channel.send("❌ Timed out");
+    return null;
+  }
+}
+
+// ===============================
+// PREVIEW EMBED
+// ===============================
+function createEmbed(data) {
+  const embed = new EmbedBuilder().setColor("#fee1f2");
+
+  if (data.title) embed.setTitle(data.title);
+  if (data.description) embed.setDescription(data.description);
+  if (data.image) embed.setImage(data.image);
+  if (data.thumb) embed.setThumbnail(data.thumb);
+
+  return embed;
 }
 
 // ===============================
@@ -61,85 +79,67 @@ async function ask(question, message) {
 client.on('messageCreate', async message => {
   if (message.author.bot) return;
 
+  const args = message.content.split(" ");
+  const cmd = args[0];
+  const sub = args[1];
+  const name = args[2];
+
   // ===============================
-  // BUILD EMBED
+  // BUILD (NORMAL + ROLES)
   // ===============================
-  if (message.content.startsWith('!embed build')) {
-    const name = message.content.split(' ')[2];
+  if ((cmd === "!embed" || cmd === "!roles") && sub === "build") {
     if (!name) return message.reply("❌ Give a name");
 
-    const title = await ask("📌 Title:", message);
-    const description = await ask("📝 Description:", message);
-    const image = await ask("🖼 Image (or skip):", message);
-    const thumb = await ask("🔳 Thumbnail (or skip):", message);
-
-    embeds[name] = {
-      title,
-      description,
-      image,
-      thumb,
+    let data = {
+      title: null,
+      description: null,
+      image: null,
+      thumb: null,
       channelId: null,
       messageId: null,
-      type: "normal"
+      type: cmd === "!roles" ? "roles" : "normal"
     };
 
+    message.channel.send("🛠 Starting builder...");
+
+    // TITLE
+    data.title = await ask("📌 Title:", message);
+    await message.channel.send({ embeds: [createEmbed(data)] });
+
+    // DESCRIPTION
+    data.description = await ask("📝 Description:", message);
+    await message.channel.send({ embeds: [createEmbed(data)] });
+
+    // IMAGE
+    data.image = await ask("🖼 Image URL (or skip):", message);
+    await message.channel.send({ embeds: [createEmbed(data)] });
+
+    // THUMB
+    data.thumb = await ask("🔳 Thumbnail URL (or skip):", message);
+    await message.channel.send({ embeds: [createEmbed(data)] });
+
+    embeds[name] = data;
     saveEmbeds();
 
-    message.channel.send(`✅ Saved embed **${name}**`);
+    message.channel.send(`✅ Saved **${name}**`);
   }
 
   // ===============================
-  // BUILD ROLE EMBED
+  // SEND
   // ===============================
-  if (message.content.startsWith('!roles build')) {
-    const name = message.content.split(' ')[2];
-    if (!name) return message.reply("❌ Give a name");
+  if ((cmd === "!embed" || cmd === "!roles") && sub === "send") {
+    if (!embeds[name]) return message.reply("❌ Not found");
 
-    const title = await ask("📌 Title:", message);
-    const description = await ask("📝 Description:", message);
-    const image = await ask("🖼 Image (or skip):", message);
-    const thumb = await ask("🔳 Thumbnail (or skip):", message);
-
-    embeds[name] = {
-      title,
-      description,
-      image,
-      thumb,
-      channelId: null,
-      messageId: null,
-      type: "roles"
-    };
-
-    saveEmbeds();
-
-    message.channel.send(`✅ Saved ROLE embed **${name}**`);
-  }
-
-  // ===============================
-  // SEND EMBED
-  // ===============================
-  if (message.content.startsWith('!embed send') || message.content.startsWith('!roles send')) {
-    const name = message.content.split(' ')[2];
     const data = embeds[name];
-
-    if (!data) return message.reply("❌ Not found");
-
-    const embed = new EmbedBuilder()
-      .setTitle(data.title || "No title")
-      .setDescription(data.description || "No description")
-      .setColor("#fee1f2");
-
-    if (data.image) embed.setImage(data.image);
-    if (data.thumb) embed.setThumbnail(data.thumb);
+    const embed = createEmbed(data);
 
     const msg = await message.channel.send({ embeds: [embed] });
 
-    embeds[name].channelId = message.channel.id;
-    embeds[name].messageId = msg.id;
+    data.channelId = message.channel.id;
+    data.messageId = msg.id;
 
     saveEmbeds();
 
-    // ADD REACTIONS IF ROLE EMBED
     if (data.type === "roles") {
       await msg.react('<:bowbydelaDNS:1472242557881815050>');
       await msg.react('<:cherrybydelaDNS:1472242466609434789>');
@@ -150,22 +150,31 @@ client.on('messageCreate', async message => {
   }
 
   // ===============================
-  // EDIT EMBED (AUTO UPDATE)
+  // EDIT (LIVE UPDATE)
   // ===============================
-  if (message.content.startsWith('!embed edit') || message.content.startsWith('!roles edit')) {
-    const name = message.content.split(' ')[2];
-    const data = embeds[name];
+  if ((cmd === "!embed" || cmd === "!roles") && sub === "edit") {
+    if (!embeds[name]) return message.reply("❌ Not found");
 
-    if (!data) return message.reply("❌ Not found");
+    let data = embeds[name];
+
+    message.channel.send("✏️ Editing...");
 
     const title = await ask("📌 New title (or skip):", message);
-    const description = await ask("📝 New description (or skip):", message);
-    const image = await ask("🖼 New image (or skip):", message);
-    const thumb = await ask("🔳 New thumbnail (or skip):", message);
-
     if (title) data.title = title;
-    if (description) data.description = description;
-    if (image !== null) data.image = image;
+
+    await message.channel.send({ embeds: [createEmbed(data)] });
+
+    const desc = await ask("📝 New description (or skip):", message);
+    if (desc) data.description = desc;
+
+    await message.channel.send({ embeds: [createEmbed(data)] });
+
+    const img = await ask("🖼 New image (or skip):", message);
+    if (img !== null) data.image = img;
+
+    await message.channel.send({ embeds: [createEmbed(data)] });
+
+    const thumb = await ask("🔳 New thumbnail (or skip):", message);
     if (thumb !== null) data.thumb = thumb;
 
     saveEmbeds();
@@ -175,18 +184,22 @@ client.on('messageCreate', async message => {
       const channel = await client.channels.fetch(data.channelId);
       const msg = await channel.messages.fetch(data.messageId);
 
-      const embed = new EmbedBuilder()
-        .setTitle(data.title || "No title")
-        .setDescription(data.description || "No description")
-        .setColor("#fee1f2");
-
-      if (data.image) embed.setImage(data.image);
-      if (data.thumb) embed.setThumbnail(data.thumb);
-
-      msg.edit({ embeds: [embed] });
+      await msg.edit({ embeds: [createEmbed(data)] });
     }
 
     message.channel.send(`✅ Updated **${name}**`);
+  }
+
+  // ===============================
+  // DELETE
+  // ===============================
+  if ((cmd === "!embed" || cmd === "!roles") && sub === "delete") {
+    if (!embeds[name]) return message.reply("❌ Not found");
+
+    delete embeds[name];
+    saveEmbeds();
+
+    message.channel.send(`🗑 Deleted **${name}**`);
   }
 });
 
