@@ -132,7 +132,9 @@ client.on('messageReactionRemove', async (reaction, user) => {
 
 
 // ===============================
-client.login(process.env.TOKEN);
+client.login(process.env.TOKEN)
+  .then(() => console.log("🔥 LOGIN SUCCESS"))
+  .catch(err => console.error("❌ LOGIN ERROR:", err));
 
 const express = require("express");
 const app = express();
