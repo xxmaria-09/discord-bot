@@ -1,144 +1,22 @@
+const { Client, GatewayIntentBits } = require('discord.js');
+
+const client = new Client({
+  intents: [GatewayIntentBits.Guilds]
+});
+
 process.on('unhandledRejection', err => {
   console.error('❌ UNHANDLED ERROR:', err);
 });
-const {
-  Client,
-  GatewayIntentBits,
-  EmbedBuilder,
-  Partials
-} = require('discord.js');
 
-const client = new Client({
-  intents: [
-    GatewayIntentBits.Guilds,
-    GatewayIntentBits.GuildMessages,
-    GatewayIntentBits.MessageContent,
-    GatewayIntentBits.GuildMessageReactions,
-    GatewayIntentBits.GuildMembers
-  ],
-  partials: [Partials.Message, Partials.Channel, Partials.Reaction]
-});
-
-
-// ===============================
-// READY
-// ===============================
 client.once('ready', () => {
   console.log(`✅ Logged in as ${client.user.tag}`);
 });
 
-
-// ===============================
-// COMMANDS
-// ===============================
-client.on('messageCreate', async message => {
-  if (message.author.bot) return;
-
-  // =====================================================
-  // NORMAL EMBED
-  // !embed Title | Description | Image(optional) | Thumb(optional)
-  // =====================================================
-  if (message.content.startsWith('!embed')) {
-
-    const args = message.content.slice(6).split('|');
-
-    const title = args[0]?.trim();
-    const description = args[1]?.trim();
-    const image = args[2]?.trim();
-    const thumb = args[3]?.trim();
-
-    const embed = new EmbedBuilder()
-      .setTitle(title || 'No title')
-      .setDescription(description || 'No description')
-      .setColor('#fee1f2');
-
-    if (image) embed.setImage(image);
-    if (thumb) embed.setThumbnail(thumb);
-
-    return message.channel.send({ embeds: [embed] });
-  }
-
-
-  // =====================================================
-  // ROLE PANEL EMBED
-  // !roles Title | Description | Image(optional) | Thumb(optional)
-  // =====================================================
-  if (message.content.startsWith('!roles')) {
-
-    const args = message.content.slice(6).split('|');
-
-    const title = args[0]?.trim();
-    const description = args[1]?.trim();
-    const image = args[2]?.trim();
-    const thumb = args[3]?.trim();
-
-    const embed = new EmbedBuilder()
-      .setTitle(title || 'Pick your roles')
-      .setDescription(description || 'React to get roles')
-      .setColor('#fee1f2');
-
-    if (image) embed.setImage(image);
-    if (thumb) embed.setThumbnail(thumb);
-
-    const msg = await message.channel.send({ embeds: [embed] });
-
-    // 🔥 YOUR 5 EMOJIS
-    await msg.react('1449123125202518016');
-await msg.react('1449123286914175039');
-await msg.react('1449122330423853106');
-await msg.react('1449123442183110920');
-await msg.react('1460633553883631814');
-  }
-});
-
-
-// =====================================================
-// EMOJI ➜ ROLE MAP (ROLE IDs ONLY)
-// =====================================================
-const reactionRoles = {
-  'bowbydelaDNS': '1449123125202518016',
-  'cherrybydelaDNS': '1449123286914175039',
-  'wing1bydelaDNS': '1449122330423853106',
-  'wing2bydelaDNS': '1449123442183110920',
-  'heartbydelaDNS': '1460633553883631814'
-};
-
-
-// ===============================
-// ADD ROLE
-// ===============================
-client.on('messageReactionAdd', async (reaction, user) => {
-  if (user.bot) return;
-  if (reaction.partial) await reaction.fetch();
-
-  const roleId = reactionRoles[reaction.emoji.name];
-  if (!roleId) return;
-
-  const member = await reaction.message.guild.members.fetch(user.id);
-  member.roles.add(roleId);
-});
-
-
-// ===============================
-// REMOVE ROLE
-// ===============================
-client.on('messageReactionRemove', async (reaction, user) => {
-  if (user.bot) return;
-  if (reaction.partial) await reaction.fetch();
-
-  const roleId = reactionRoles[reaction.emoji.name];
-  if (!roleId) return;
-
-  const member = await reaction.message.guild.members.fetch(user.id);
-  member.roles.remove(roleId);
-});
-
-
-// ===============================
-
 client.login(process.env.TOKEN)
   .then(() => console.log("🔥 LOGIN SUCCESS"))
   .catch(err => console.error("❌ LOGIN ERROR:", err));
+
+// EXPRESS (keep Render happy)
 const express = require("express");
 const app = express();
 
@@ -150,7 +28,3 @@ const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
   console.log(`🌐 Server running on port ${PORT}`);
 });
-
-
-
-
