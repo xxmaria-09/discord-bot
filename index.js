@@ -118,7 +118,7 @@ client.on('messageCreate', async message => {
   }
 
   // ===============================
-  // SEND (FIXED)
+  // SEND (FINAL FIX)
   // ===============================
   if ((cmd === "!embed" || cmd === "!roles") && sub === "send") {
     if (!embeds[name]) return message.reply("❌ Not found");
@@ -126,33 +126,24 @@ client.on('messageCreate', async message => {
     const data = embeds[name];
     const embed = createEmbed(data);
 
-    let msg;
-
-    // 👉 EDIT EXISTING MESSAGE IF EXISTS
+    // 🔥 DELETE OLD MESSAGE COMPLETELY
     if (data.channelId && data.messageId) {
       try {
         const channel = await client.channels.fetch(data.channelId);
-        msg = await channel.messages.fetch(data.messageId);
-
-        await msg.edit({ embeds: [embed] });
-
-        // 🧹 REMOVE OLD REACTIONS
-        await msg.reactions.removeAll();
-
-      } catch {
-        // if message deleted → send new
-        msg = await message.channel.send({ embeds: [embed] });
-      }
-    } else {
-      msg = await message.channel.send({ embeds: [embed] });
+        const oldMsg = await channel.messages.fetch(data.messageId);
+        await oldMsg.delete();
+      } catch (e) {}
     }
 
-    // SAVE IDS
-    data.channelId = msg.channel.id;
+    // SEND NEW CLEAN MESSAGE
+    const msg = await message.channel.send({ embeds: [embed] });
+
+    // SAVE NEW MESSAGE
+    data.channelId = message.channel.id;
     data.messageId = msg.id;
     saveEmbeds();
 
-    // ADD REACTIONS
+    // ADD NEW REACTIONS ONLY
     if (data.type === "roles") {
       await msg.react('<:000bowcozi:1489354548077134039>');
       await msg.react('<:000bowstrawb:1489348301403980059>');
@@ -192,14 +183,6 @@ client.on('messageCreate', async message => {
 
     saveEmbeds();
 
-    // UPDATE LIVE MESSAGE
-    if (data.channelId && data.messageId) {
-      const channel = await client.channels.fetch(data.channelId);
-      const msg = await channel.messages.fetch(data.messageId);
-
-      await msg.edit({ embeds: [createEmbed(data)] });
-    }
-
     message.channel.send(`✅ Updated **${name}**`);
   }
 
@@ -220,11 +203,11 @@ client.on('messageCreate', async message => {
 // REACTION ROLES
 // ===============================
 const reactionRoles = {
-  '000bowcozi': '1489354548077134039',
-  '000bowstrawb': '1489348301403980059',
-  '000hearts': '1489357624049664210',
-  '000lstrawberry': '1489348108662865950',
-  '000rstrawberry': '1489348175423737907'
+  '000bowcozi': '1449123125202518016',
+  '000bowstrawb': '1449123286914175039',
+  '000hearts': '1449122330423853106',
+  '000lstrawberry': '1449123442183110920',
+  '000rstrawberry': '1460633553883631814'
 };
 
 client.on('messageReactionAdd', async (reaction, user) => {
@@ -250,7 +233,7 @@ client.on('messageReactionRemove', async (reaction, user) => {
 });
 
 // ===============================
-// KEEP ALIVE
+// KEEP ALIVE (REPLIT)
 // ===============================
 const express = require("express");
 const app = express();
@@ -260,9 +243,9 @@ app.get("/", (req, res) => {
 });
 
 const PORT = process.env.PORT || 3000;
-
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
 });
 
+// ===============================
 client.login(process.env.TOKEN);
