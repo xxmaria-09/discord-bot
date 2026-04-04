@@ -4,7 +4,6 @@ const {
   EmbedBuilder,
   Partials
 } = require('discord.js');
-
 const fs = require("fs");
 
 const client = new Client({
@@ -33,11 +32,10 @@ client.once('ready', () => {
 });
 
 // ===============================
-// ASK FUNCTION (CLEAN)
+// ASK FUNCTION
 // ===============================
 async function ask(question, message) {
   const filter = m => m.author.id === message.author.id;
-
   await message.channel.send(question);
 
   try {
@@ -50,7 +48,6 @@ async function ask(question, message) {
 
     const answer = collected.first().content.trim();
     if (answer.toLowerCase() === "skip") return null;
-
     return answer;
 
   } catch {
@@ -60,7 +57,7 @@ async function ask(question, message) {
 }
 
 // ===============================
-// PREVIEW EMBED
+// CREATE EMBED
 // ===============================
 function createEmbed(data) {
   const embed = new EmbedBuilder().setColor("#fee1f2");
@@ -85,7 +82,7 @@ client.on('messageCreate', async message => {
   const name = args[2];
 
   // ===============================
-  // BUILD (NORMAL + ROLES)
+  // BUILD
   // ===============================
   if ((cmd === "!embed" || cmd === "!roles") && sub === "build") {
     if (!name) return message.reply("❌ Give a name");
@@ -102,19 +99,15 @@ client.on('messageCreate', async message => {
 
     message.channel.send("🛠 Starting builder...");
 
-    // TITLE
     data.title = await ask("📌 Title:", message);
     await message.channel.send({ embeds: [createEmbed(data)] });
 
-    // DESCRIPTION
     data.description = await ask("📝 Description:", message);
     await message.channel.send({ embeds: [createEmbed(data)] });
 
-    // IMAGE
     data.image = await ask("🖼 Image URL (or skip):", message);
     await message.channel.send({ embeds: [createEmbed(data)] });
 
-    // THUMB
     data.thumb = await ask("🔳 Thumbnail URL (or skip):", message);
     await message.channel.send({ embeds: [createEmbed(data)] });
 
@@ -125,7 +118,7 @@ client.on('messageCreate', async message => {
   }
 
   // ===============================
-  // SEND
+  // SEND (FIXED)
   // ===============================
   if ((cmd === "!embed" || cmd === "!roles") && sub === "send") {
     if (!embeds[name]) return message.reply("❌ Not found");
@@ -133,24 +126,44 @@ client.on('messageCreate', async message => {
     const data = embeds[name];
     const embed = createEmbed(data);
 
-    const msg = await message.channel.send({ embeds: [embed] });
+    let msg;
 
-    data.channelId = message.channel.id;
+    // 👉 EDIT EXISTING MESSAGE IF EXISTS
+    if (data.channelId && data.messageId) {
+      try {
+        const channel = await client.channels.fetch(data.channelId);
+        msg = await channel.messages.fetch(data.messageId);
+
+        await msg.edit({ embeds: [embed] });
+
+        // 🧹 REMOVE OLD REACTIONS
+        await msg.reactions.removeAll();
+
+      } catch {
+        // if message deleted → send new
+        msg = await message.channel.send({ embeds: [embed] });
+      }
+    } else {
+      msg = await message.channel.send({ embeds: [embed] });
+    }
+
+    // SAVE IDS
+    data.channelId = msg.channel.id;
     data.messageId = msg.id;
-
     saveEmbeds();
 
+    // ADD REACTIONS
     if (data.type === "roles") {
-      await msg.react('<:bowbydelaDNS:1472242557881815050>');
-      await msg.react('<:cherrybydelaDNS:1472242466609434789>');
-      await msg.react('<:wing1bydelaDNS:1472241395975585844>');
-      await msg.react('<:wing2bydelaDNS:1472242032700559598>');
-      await msg.react('<:heartbydelaDNS:1471859515266830449>');
+      await msg.react('<:000bowcozi:1489354548077134039>');
+      await msg.react('<:000bowstrawb:1489348301403980059>');
+      await msg.react('<:000hearts:1489357624049664210>');
+      await msg.react('<:000lstrawberry:1489348108662865950>');
+      await msg.react('<:000rstrawberry:1489348175423737907>');
     }
   }
 
   // ===============================
-  // EDIT (LIVE UPDATE)
+  // EDIT
   // ===============================
   if ((cmd === "!embed" || cmd === "!roles") && sub === "edit") {
     if (!embeds[name]) return message.reply("❌ Not found");
@@ -179,7 +192,7 @@ client.on('messageCreate', async message => {
 
     saveEmbeds();
 
-    // UPDATE MESSAGE
+    // UPDATE LIVE MESSAGE
     if (data.channelId && data.messageId) {
       const channel = await client.channels.fetch(data.channelId);
       const msg = await channel.messages.fetch(data.messageId);
@@ -207,11 +220,11 @@ client.on('messageCreate', async message => {
 // REACTION ROLES
 // ===============================
 const reactionRoles = {
-  'bowbydelaDNS': '1449123125202518016',
-  'cherrybydelaDNS': '1449123286914175039',
-  'wing1bydelaDNS': '1449122330423853106',
-  'wing2bydelaDNS': '1449123442183110920',
-  'heartbydelaDNS': '1460633553883631814'
+  '000bowcozi': '1489354548077134039',
+  '000bowstrawb': '1489348301403980059',
+  '000hearts': '1489357624049664210',
+  '000lstrawberry': '1489348108662865950',
+  '000rstrawberry': '1489348175423737907'
 };
 
 client.on('messageReactionAdd', async (reaction, user) => {
@@ -237,4 +250,19 @@ client.on('messageReactionRemove', async (reaction, user) => {
 });
 
 // ===============================
+// KEEP ALIVE
+// ===============================
+const express = require("express");
+const app = express();
+
+app.get("/", (req, res) => {
+  res.send("Bot is alive!");
+});
+
+const PORT = process.env.PORT || 3000;
+
+app.listen(PORT, () => {
+  console.log(`Server running on port ${PORT}`);
+});
+
 client.login(process.env.TOKEN);
